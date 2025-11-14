@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Film Anggi Febrina</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 16px;
+    background-color: #f8f9fa;
+    color: #495057;
+  }
+
+  h1 {
+    text-align: center;
+    color: #7a6ba8;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    color: #5d4a96;
+    margin-top: 25px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 6px;
+    font-size: 1.4rem;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #7a6ba8;
+    font-size: 1rem;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 16px;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #9d8abf;
+    box-shadow: 0 0 0 2px rgba(157, 138, 191, 0.25);
+  }
+
+  button {
+    background-color: #9d8abf;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    transition: background-color 0.2s;
+  }
+
+  button:hover {
+    background-color: #7a6ba8;
+  }
+
+  .btn-import {
+    background-color: #8a7bb8;
+    margin-top: 12px;
+  }
+
+  .btn-import:hover {
+    background-color: #7a6ba8;
+  }
+
+  .btn-small {
+    padding: 8px 12px;
+    font-size: 14px;
+    width: auto;
+    margin-left: 8px;
+    min-width: 60px;
+    min-height: 36px;
+    border-radius: 4px;
+    background-color: #9d8abf;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-small:hover {
+    background-color: #7a6ba8;
+  }
+
+  #movieList {
+    margin-top: 25px;
+  }
+
+  .movie-item {
+    background: white;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(157, 138, 191, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid #9d8abf;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .movie-item > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .movie-edit-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .search-section {
+    margin: 20px 0;
+  }
+
+  .no-data {
+    text-align: center;
+    color: #9e9e9e;
+    font-style: italic;
+    padding: 20px;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      margin: 10px auto;
+      padding: 12px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+    }
+    .movie-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .movie-item > div {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+    .count-badge {
+    font-size: 0.85rem;
+    color: #9e9e9e;
+    font-weight: normal;
+    margin-left: 6px;
+  }
+
+  @media (max-width: 360px) {
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 13px;
+      min-width: 50px;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>🎬 Film Anggi Febrina</h1>
+
+  <div class="form-group">
+    <label for="movieTitle">Judul Film:</label>
+    <input type="text" id="movieTitle" placeholder="Contoh: Spirited Away" autofocus />
+  </div>
+  <div class="form-group">
+    <label for="movieRating">Rating (1-10):</label>
+    <input type="number" id="movieRating" min="1" max="10" placeholder="1 sampai 10" />
+  </div>
+  <button onclick="addMovie()">Tambah Film</button>
+  <button class="btn-import" onclick="importFromText()">Impor dari Teks</button>
+
+  <!-- DUA PENCARIAN TERPISAH -->
+  <div class="search-section">
+    <h2>Pencarian</h2>
+    <div class="form-group">
+      <label for="searchTitle">Cari Judul Film:</label>
+      <input type="text" id="searchTitle" placeholder="Ketik judul film..." oninput="
+      Movies()" />
+    </div>
+    <div class="form-group">
+      <label for="searchRating">Cari Rating (1-10):</label>
+      <input type="number" id="searchRating" min="1" max="10" placeholder="Contoh: 8" oninput="renderMovies()" />
+    </div>
+  </div>
+
+  <div id="movieList">
+    <h2 id="listHeader">Daftar Film</h2>
+    <div id="moviesContainer"></div>
+  </div>
+  
+ <script>
+  let watchedMovies = JSON.parse(localStorage.getItem('watchedMovies')) || [];
+  let editingIndex = null;
+
+  function saveToLocalStorage() {
+    localStorage.setItem('watchedMovies', JSON.stringify(watchedMovies));
+  }
+
+  function addMovie() {
+    const titleInput = document.getElementById('movieTitle');
+    const ratingInput = document.getElementById('movieRating');
+
+    const title = titleInput.value.trim();
+    const rating = parseInt(ratingInput.value, 10);
+
+    if (!title) {
+      alert("Judul film tidak boleh kosong!");
+      return;
+    }
+
+    if (isNaN(rating) || rating < 1 || rating > 10) {
+      alert("Rating harus angka antara 1 sampai 10!");
+      return;
+    }
+
+    watchedMovies.push({ title, rating });
+    saveToLocalStorage();
+
+    titleInput.value = '';
+    ratingInput.value = '';
+    titleInput.focus();
+    renderMovies();
+  }
+
+  function editMovie(index) {
+    editingIndex = index;
+    renderMovies();
+  }
+
+  function saveEdit() {
+    const editTitle = document.getElementById('editTitle').value.trim();
+    const editRating = parseInt(document.getElementById('editRating').value, 10);
+
+    if (!editTitle) {
+      alert("Judul film tidak boleh kosong!");
+      return;
+    }
+
+    if (isNaN(editRating) || editRating < 1 || editRating > 10) {
+      alert("Rating harus angka antara 1 sampai 10!");
+      return;
+    }
+
+    watchedMovies[editingIndex] = { title: editTitle, rating: editRating };
+    saveToLocalStorage();
+    editingIndex = null;
+    renderMovies();
+  }
+
+  function cancelEdit() {
+    editingIndex = null;
+    renderMovies();
+  }
+
+  function importFromText() {
+    const input = prompt("Tempel daftar film dalam format:\nJudul Film : 8/10\nSetiap baris satu film.\n\nContoh:\nteluh darah : 10/10\nharum malam : 9,5/10");
+    if (!input) return;
+
+    const lines = input.split('\n');
+    let added = 0;
+
+    for (const line of lines) {
+      const match = line.trim().match(/^(.+?)\s*[:：]\s*([\d,\.]+)\s*\/\s*10$/i);
+      if (match) {
+        let title = match[1].trim();
+        let ratingStr = match[2].replace(',', '.');
+        let rating = parseInt(ratingStr, 10);
+
+        if (title && !isNaN(rating) && rating >= 1 && rating <= 10) {
+          const exists = watchedMovies.some(m => m.title.toLowerCase() === title.toLowerCase());
+          if (!exists) {
+            watchedMovies.push({ title, rating });
+            added++;
+          }
+        }
+      }
+    }
+
+    if (added > 0) {
+      saveToLocalStorage();
+      renderMovies();
+      alert(`Berhasil menambahkan ${added} film! Rating desimal dijadikan bulat.`);
+    } else {
+      alert("Tidak ada film valid ditemukan.\nFormat: Judul : 9,5/10");
+    }
+  }
+
+  function renderMovies() {
+    const container = document.getElementById('moviesContainer');
+    const titleQuery = document.getElementById('searchTitle').value?.trim().toLowerCase() || '';
+    const ratingQuery = document.getElementById('searchRating').value?.trim() || '';
+
+    let filtered = watchedMovies
+      .map((movie, index) => ({ ...movie, originalIndex: index }));
+
+    if (titleQuery) {
+      filtered = filtered.filter(movie => movie.title.toLowerCase().includes(titleQuery));
+    }
+
+    if (ratingQuery !== '') {
+      const ratingNum = parseInt(ratingQuery, 10);
+      if (!isNaN(ratingNum) && ratingNum >= 1 && ratingNum <= 10) {
+        filtered = filtered.filter(movie => movie.rating === ratingNum);
+      }
+    }
+
+    filtered.sort((a, b) => a.title.localeCompare(b.title, 'id', { sensitivity: 'base' }));
+
+    // ✅ UPDATE JUMLAH DI JUDUL
+    document.getElementById('listHeader').textContent = `Daftar Film (${filtered.length})`;
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<p class="no-data">Tidak ada film yang sesuai pencarian.</p>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(movie => {
+      if (editingIndex === movie.originalIndex) {
+        return `
+          <div class="movie-item">
+            <div class="movie-edit-form">
+              <input type="text" id="editTitle" value="${movie.title}" />
+              <input type="number" id="editRating" min="1" max="10" value="${movie.rating}" />
+              <div>
+                <button class="btn-small" onclick="saveEdit()">Simpan</button>
+                <button class="btn-small" onclick="cancelEdit()" style="background-color:#f16b6b;">Batal</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="movie-item">
+            <strong>${movie.title}</strong>
+            <div>
+              <span>⭐ ${movie.rating}/10</span>
+              <button class="btn-small" onclick="editMovie(${movie.originalIndex})">Edit</button>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  }
+
+  // ✅ Panggil sekali saat halaman pertama kali dimuat
+  renderMovies();
+
+  // Navigasi Enter
+  document.getElementById('movieTitle')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('movieRating')?.focus();
+    }
+  });
+
+  document.getElementById('movieRating')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addMovie();
+    }
+  });
+</script>
+</body>
+</html>
